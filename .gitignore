@@ -5,8 +5,8 @@ Pull requests
 Issues
 Marketplace
 Explore
- 
-@Thoma997 
+
+@Thoma997
 Learn Git and GitHub without any code!
 Using the Hello World guide, you’ll start a branch, write comments, and open a pull request.
 
@@ -34,9 +34,13 @@ Latest commit 6eb239f 1 minute ago
  1 contributor
 129 lines (105 sloc)  1.76 KB
 
-# manually added folders 
+# manually added folders
 .idea/
-  
+dynamic_files/
+failed_extraction_files/
+listing_files/
+start_files/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -178,4 +182,3 @@ API
 Training
 Blog
 About
-
