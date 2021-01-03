@@ -33,6 +33,9 @@ Latest commit 6eb239f 1 minute ago
  History
  1 contributor
 129 lines (105 sloc)  1.76 KB
+
+# manually added folders 
+.idea/
   
 # Byte-compiled / optimized / DLL files
 __pycache__/
