@@ -50,5 +50,5 @@ to help us make the translator converge :)
 Activate environment and start translator:
 ```shell
 $ conda activate sdg-bert
-$ cd ~/Desktop/sdg-bert-project/ && python translator.py
+$ cd ~/Desktop/sdg-bert-project/ && python translator.py >> ~/Desktop/sdg-bert-project/log.txt 2&>1
 ```
