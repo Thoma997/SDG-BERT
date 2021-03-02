@@ -1,4 +1,4 @@
-name: master_thesis
+name: sdg-bert
 channels:
   - defaults
 dependencies:

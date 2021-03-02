@@ -15,7 +15,7 @@ def print_status(start_time, total_chars, request_counter):
          "Total src_lang chars: {}\n"
          "Total requests: {}\n"
          "{} chars per minute\n"
-         "{} requests per minute").format(delta_sec, total_chars, request_counter,
+         "{} requests per minute").format(run_time_hours, total_chars, request_counter,
                                           chars_per_min, requests_per_min)
     print(s)
 
@@ -136,8 +136,8 @@ def main(time_limit):
                                                                          l_trans,
                                                                          (abs(l_orig - l_trans) / l_orig) * 100))
 
-            print("TEXT_ORIG:\n".format(text))
-            print("TEXT_PORTIONS_INPUT:\n".format(src_text))
+            print("TEXT_ORIG:\n{}".format(text))
+            print("TEXT_PORTIONS_INPUT:\n{}".format(src_text))
             print("- - - - - - - - - - - - - - - - - - - - - - -")
             continue
 
