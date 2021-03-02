@@ -1,7 +1,8 @@
 import settings
-import helpers
+import handlers
 import sys
 import models
+import helpers
 
 
 def main(platform, mode='all'):
@@ -71,14 +72,14 @@ def exploit_listings_urls(platform):
     # go through start urls
     flag = True
 
-    while(flag):
+    while flag:
         url = helpers.dequeue_url('listing_files', platform)
         if url:
             page = helpers.make_request(url, platform)
             if not page:
                 continue
             try:
-                helpers.handle_listing(page, platform, url)
+                handlers.handle_listing(page, platform, url)
             except Exception as e:
                 helpers.queue_url(url, 'listing_files', platform)
                 raise Exception('Exception: {}'.format(e))
@@ -86,13 +87,9 @@ def exploit_listings_urls(platform):
             flag = False
 
 
-
-
-
 if __name__ == '__main__':
     args = sys.argv
     keys = settings.platforms.keys()
-    args = ['', 'Volkswagen_press', 'exploit']
     assert len(args) >= 2, 'crawler.py takes min 2 arguments but {} given'.format(len(args))
     assert args[1] in keys, '{} not in {}'.format(args[1], keys)
     if len(args) == 2:
@@ -101,4 +98,3 @@ if __name__ == '__main__':
         main(args[1], args[2])
     else:
         raise ValueError('')
-

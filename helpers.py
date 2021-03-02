@@ -2,6 +2,8 @@ from urllib.parse import urlparse
 import requests
 import os
 import time
+import json
+import re
 
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -10,8 +12,8 @@ import random
 import extractors
 import settings
 import selenium_utils
-from models import SQLHandler
-sql_handler = SQLHandler()
+#from models import SQLHandler
+#sql_handler = SQLHandler()
 t_prev = time.time()
 SLEEP_TIME = 9
 
@@ -50,7 +52,7 @@ def make_request(url, platform):
     if r.status_code != 200:
         os.system('say "Got non-200 Response"')
         log("WARNING: Got a {} status code for URL: {}\n{}".format(r.status_code, url, r.text))
-        queue_url(url, 'listing_files', platform)
+        #queue_url(url, 'listing_files', platform)
         return None
 
     captcha_texts = ['<title>hCaptcha solve page</title>', '<title>reCAPTCHA solve page</title>']
@@ -180,7 +182,7 @@ def queue_listings(url, platform):
         for company in settings.companies:
             url_expansion = '{}/jobs'.format(company)
             extended_url = url + url_expansion
-            page, html = make_request(extended_url, platform)
+            page = make_request(extended_url, platform)
 
             jobs = page.find_all(extractors.has_datatnentityid_attr)
             log('Found {} jobs.'.format(len(jobs)))
@@ -226,44 +228,45 @@ def create_headers(platform):
     if platform == 'twitter':
         bearer_token = auth()
         headers = {"Authorization": "Bearer {}".format(bearer_token)}
+    else:
+        headers = None
     return headers
 
 
-def handle_listing(page, platform, url):
-    if platform == 'indeed':
-        title = extractors.extract_element_text(page, 'h1', {'class': 'jobsearch-JobInfoHeader-title'})
-        company = extractors.extract_element_text(page, 'div', {'class': 'jobsearch-CompanyReview--heading'})
-        if not company:
-            company = extractors.extract_element_text(page, 'div', {'class': 'icl-u-lg-mr--sm icl-u-xs-mr--xs'})
-        job_meta_header = extractors.extract_element_text(page, 'span', {'class': 'jobsearch-JobMetadataHeader-item'})
-        desc = extractors.extract_element_text(page, 'div', {'id': 'jobDescriptionText'})
-        url = extractors.extract_element_attr_value(page, 'meta', {'id': 'indeed-share-url'}, 'content')
-        job_id = get_url_param_value(url, 'jk')
-        footer = extractors.extract_indeed_job_footer_text(page)
-        date = extractors.get_date_from_indeed_footer(footer)
-        sql_handler.save_indeed_job(job_id=job_id, date=date, company=company,
-                                    title=title, job_meta=job_meta_header, text=desc, url=url, platform=platform)
-    if platform == 'twitter':
-        next_token = extractors.extract_twitter_response(page)
-        while next_token:
-            token_url = format_url(url, platform, add_param={'pagination_token': next_token})
-            page = make_request(token_url, platform)
-            next_token = extractors.extract_twitter_response(page)
-
-    if platform == 'Volkswagen_press':
-        id = platform + '_' + get_url_path_element(url, -1)
-        title = extractors.extract_element_text(page, 'h1', {'class': 'page--title'})
-        company = "Volkswagen"
-        date = extractors.extract_element_text(page, 'div', {'class': 'meta--item'}, 0)
-        date_string = extractors.extract_date_string_from_text(date, platform)
-        meta_topics = extractors.extract_child_element_text(page, 'div', {'class': 'meta--item'},
-                                                            'a', {'content-link': ''}, 2, 0)
-        short_summary = extractors.extract_list_text_by_parent(page, 'div', {'class': 'topic-list'})
-        summary = extractors.extract_child_element_text(page, 'div', {'class': 'page-item--intro'}, 'p', None, 0, 0)
-        text = extractors.extract_concatinated_text_by_element(page, 'div', {'class': 'page-item--text'}, 'p')
-        sql_handler.save_press_release(release_id=id, company=company, release_date=date_string, topics=meta_topics, url=url,
-                                       title=title, short_summary=short_summary, summary=summary, text=text)
-
+#def handle_listing(page, platform, url):
+#    if platform == 'indeed':
+#        title = extractors.extract_element_text(page, 'h1', {'class': 'jobsearch-JobInfoHeader-title'})
+#        company = extractors.extract_element_text(page, 'div', {'class': 'jobsearch-CompanyReview--heading'})
+#        if not company:
+#            company = extractors.extract_element_text(page, 'div', {'class': 'icl-u-lg-mr--sm icl-u-xs-mr--xs'})
+#        job_meta_header = extractors.extract_element_text(page, 'span', {'class': 'jobsearch-JobMetadataHeader-item'})
+#        desc = extractors.extract_element_text(page, 'div', {'id': 'jobDescriptionText'})
+#        url = extractors.extract_element_attr_value(page, 'meta', {'id': 'indeed-share-url'}, 'content')
+#        job_id = get_url_param_value(url, 'jk')
+#        date = extractors.extract_indeed_job_footer_text(page)
+#        sql_handler.save_indeed_job(job_id=job_id, date=date, company=company,
+#                                    title=title, job_meta=job_meta_header, text=desc, url=url, platform=platform)
+#    if platform == 'twitter':
+#        next_token = extractors.extract_twitter_response(page)
+#        while next_token:
+#            token_url = format_url(url, platform, add_param={'pagination_token': next_token})
+#            page = make_request(token_url, platform)
+#            next_token = extractors.extract_twitter_response(page)
+#
+#    if platform == 'Volkswagen_press':
+#        id = platform + '_' + get_url_path_element(url, -1)
+#        title = extractors.extract_element_text(page, 'h1', {'class': 'page--title'})
+#        company = "Volkswagen"
+#        date = extractors.extract_element_text(page, 'div', {'class': 'meta--item'}, 0)
+#        date_string = extractors.extract_date_string_from_text(date, platform)
+#        meta_topics = extractors.extract_child_element_text(page, 'div', {'class': 'meta--item'},
+#                                                            'a', {'content-link': ''}, 2, 0)
+#        short_summary = extractors.extract_list_text_by_parent(page, 'div', {'class': 'topic-list'})
+#        summary = extractors.extract_child_element_text(page, 'div', {'class': 'page-item--intro'}, 'p', None, 0, 0)
+#        text = extractors.extract_concatinated_text_by_element(page, 'div', {'class': 'page-item--text'}, 'p')
+#        sql_handler.save_press_release(release_id=id, company=company, release_date=date_string, topics=meta_topics, url=url,
+#                                       title=title, short_summary=short_summary, summary=summary, text=text)
+#
 
 
 
@@ -284,5 +287,61 @@ def handle_listing(page, platform, url):
 #                        sql_handler.save_tweet(tweet_id, username, creation_date, text)
 #                    next_token = json_response['meta']['next_token'] if 'next_token' in json_response[
 #                        'meta'].keys() else ''
+
+def legacy_format_json(original):
+    """
+    Directly copied from googletrans python package source code.
+    Helper function for json file extraction.
+    """
+    # save state
+    states = []
+    text = original
+
+    # save position for double-quoted texts
+    for i, pos in enumerate(re.finditer('"', text)):
+        # pos.start() is a double-quote
+        p = pos.start() + 1
+        if i % 2 == 0:
+            nxt = text.find('"', p)
+            states.append((p, text[p:nxt]))
+
+    # replace all wiered characters in text
+    while text.find(',,') > -1:
+        text = text.replace(',,', ',null,')
+    while text.find('[,') > -1:
+        text = text.replace('[,', '[null,')
+
+    # recover state
+    for i, pos in enumerate(re.finditer('"', text)):
+        p = pos.start() + 1
+        if i % 2 == 0:
+            j = int(i / 2)
+            nxt = text.find('"', p)
+            # replacing a portion of a string
+            # use slicing to extract those parts of the original string to be kept
+            text = text[:p] + states[j][1] + text[nxt:]
+
+    converted = json.loads(text)
+    return converted
+
+
+def format_json(original):
+    """
+    Receives a string in JSON format and returns a JSON object.
+
+    Args:
+    original -- string in JSON format
+
+    Returns:
+    converted -- JSON object
+    """
+    assert type(original) == str, 'type(arg) != str'
+
+    try:
+        converted = json.loads(original)
+    except ValueError:
+        converted = legacy_format_json(original)
+
+    return converted
 
 

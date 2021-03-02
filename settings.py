@@ -1,5 +1,6 @@
-from os.path import expanduser
-home = expanduser("~") + '/'
+import os
+
+home = os.path.expanduser("~") + '/'
 current_dir = home + 'Desktop/codebase_thesis/'
 
 replacements = {'ł': 'l', 'ć': 'c', 'ø': 'o', 'ö': 'oe', 'é': 'e', 'ü': 'ue', 'ä': 'ae', 'à': 'a',
@@ -138,8 +139,8 @@ platforms = {
 # Database
 database = 'master_thesis'
 host = '51.145.244.152'
-user = 'robot'
-password = 'Robo42!&OT'
+user = os.environ.get('MYSQL_USER_THESIS')
+password = os.environ.get('MYSQL_PW_THESIS')
 
 
 # companies
@@ -157,6 +158,8 @@ files = {'listing_files': {'indeed': current_dir + 'listing_files/indeed.txt',
                          'BMW_press': current_dir + 'start_files/BMW_press.txt'},
          'failed_extraction_files': {'indeed': current_dir + 'failed_extraction_files/indeed.txt'}
          }
+
+char_limit_translator = 1000
 
 # logging
 log_stdout = True

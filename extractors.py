@@ -58,7 +58,10 @@ def extract_text_from_element(element):
 
 def extract_element_text(page, element, attr, pos=0):
     element = find_element(page, element, attr, pos)
-    return extract_text_from_element(element)
+    if element:
+        return extract_text_from_element(element)
+    else:
+        return None
 
 
 def extract_child_element_text(page, parent_element, parent_attr, child_element, child_attr, parent_pos=0, child_pos=0):
@@ -92,8 +95,8 @@ def extract_concatinated_text_by_element(page, element, attr, iterative_element,
     return cum_text
 
 
-def extract_element_attr_value(page, element, search_attr, target_attr):
-    tag = find_element(page, element, search_attr)
+def extract_element_attr_value(page, element, search_attr, target_attr, pos=0):
+    tag = find_element(page, element, search_attr, pos)
     return tag.get(str(target_attr)).strip()
 
 
@@ -133,60 +136,40 @@ def extract_indeed_job_footer_text(page):
     tags = page.find_all('div', {'class': 'jobsearch-JobMetadataFooter'})
 
     try:
-        children = tags[0].contents
+        tag = tags[0]
     except AttributeError or IndexError:
         return None
 
-    s = ''
-    if len(children) != 0:
-        for child in children:
-            try:
-                s += child.text
-            except AttributeError:
-                continue
-        return s.strip()
-    else:
-        return None
+    days_back = None
+    pattern = '-?\s?(\w+(\s\w+\s\w+)?)?\s?(\d\d?)\+?\s.*-?'
+    today_synonymes = ['dagen geleden', 'gerade geschaltet', 'vandaag', "aujourd\'hui", 'heute',
+                       'zojuist', 'hoy', 'today', 'publiée à l\'instant', 'just posted']
+    for child in tag.children:
+        s = child.text.lower()
 
-def get_date_from_indeed_footer(s):
-    pattern = '.+\s?-?(\s\w*)?\s(\d\d?)\+?\s.*-?.+'
-    pattern_today = '.*-\s(\w+(\s\w+)?)\s-.*'
-    today_synonymes = ['dagen geleden', 'gerade geschaltet', 'vandaag', "aujourd\'hui", 'heute']
-    days_back = get_single_group_regex(pattern, s, 2)
-    if not days_back:
-        today = get_single_group_regex(pattern_today, s, 1)
-        helpers.log(today)
-        if today:
+        days_back = get_single_group_regex(pattern, s, 3)
+        if days_back:
+            break
+
+        synonymes = [syn in s for syn in today_synonymes]
+        if sum(synonymes) > 0:
             days_back = 0
-        else:
-            for phrase in today_synonymes:
-                if phrase in s.lower():
-                    helpers.log('found gerade geschaltet in {}'.format(s))
-                    days_back = 0
+            break
 
-
-    if days_back:
+    if days_back or days_back == 0:
+        print('Note {} days back from string: {}'.format(int(days_back), s))
         date = datetime.now().date() - timedelta(days=int(days_back))
-        #date_string = datetime.strftime(date, '%Y-%m-%d')
         return date
     else:
+        print('FOUND NO DATE IN: {}'.format(tag.text))
         return None
 
 
 def get_tweet_data(tweet):
     tweet_id = tweet['id']
-    creation_date = datetime.datetime.strptime(tweet['created_at'][:10], '%Y-%m-%d').date()
+    creation_date = datetime.strptime(tweet['created_at'][:10], '%Y-%m-%d').date()
     text = tweet['text']
     return tweet_id, creation_date, text
 
-
-def extract_twitter_response(page):
-    username = page['includes']['users'][0]['username']
-    for tweet in page['data']:
-        tweet_id, creation_date, text = get_tweet_data(tweet)
-        helpers.sql_handler.save_tweet(tweet_id, username, creation_date, text)
-        next_token = page['meta']['next_token'] if 'next_token' in page['meta'].keys() else ''
-
-    return next_token
 
 

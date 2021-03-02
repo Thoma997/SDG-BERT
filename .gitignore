@@ -1,45 +1,11 @@
-Skip to content
-Search or jump to…
-
-Pull requests
-Issues
-Marketplace
-Explore
-
-@Thoma997
-Learn Git and GitHub without any code!
-Using the Hello World guide, you’ll start a branch, write comments, and open a pull request.
-
-
-Thoma997
-/
-company_sustainability_indexer
-Private
-1
-00
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-company_sustainability_indexer/.gitignore
-@Thoma997
-Thoma997 Initial commit
-Latest commit 6eb239f 1 minute ago
- History
- 1 contributor
-129 lines (105 sloc)  1.76 KB
-
 # manually added folders
 .idea/
 dynamic_files/
 failed_extraction_files/
 listing_files/
 start_files/
+text_strings.txt
+test_suite.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

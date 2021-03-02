@@ -1,7 +1,7 @@
 import requests
 import settings
 import datetime
-import helpers
+import handlers
 
 
 # To set your enviornment variables in your terminal run the following line:
@@ -49,26 +49,26 @@ def connect_to_endpoint(url, headers):
 def get_tweet_data(tweet):
     tweet_id = tweet['id']
     creation_date = datetime.datetime.strptime(tweet['created_at'][:10], '%Y-%m-%d').date()
-    text = helpers.clean_text(tweet['text'])
+    text = handlers.clean_text(tweet['text'])
     return tweet_id, creation_date, text
 
 
 def main():
-    sql_handler = helpers.sql_handler
+    sql_handler = handlers.sql_handler
     bearer_token = auth()
     headers = create_headers(bearer_token)
     next_token = ''
     for company, company_dict in settings.twitter['companies'].items():
-        helpers.log("\n\n----------\nCRAWL {}\n----------\n\n".format(company))
+        handlers.log("\n\n----------\nCRAWL {}\n----------\n\n".format(company))
         for username, company_id in company_dict.items():
-            helpers.log("\n\n----------\nCRAWL {}\n----------\n\n".format(username))
+            handlers.log("\n\n----------\nCRAWL {}\n----------\n\n".format(username))
             next_token = 'init'
             while next_token:
                 if next_token == 'init':
                     url = create_url(company_id)
                 else:
                     url = create_url(company_id, next_token)
-                json_response = helpers.make_request(url, 'twitter', headers=headers, return_format='json')
+                json_response = handlers.make_request(url, 'twitter', headers=headers, return_format='json')
                 for tweet in json_response['data']:
                     tweet_id, creation_date, text = get_tweet_data(tweet)
                     sql_handler.save_tweet(tweet_id, username, creation_date, text)
