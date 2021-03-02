@@ -138,7 +138,7 @@ platforms = {
 
 # Database
 database = 'master_thesis'
-host = '51.145.244.152'
+host = os.environ.get('MYSQL_HOST_THESIS')
 user = os.environ.get('MYSQL_USER_THESIS')
 password = os.environ.get('MYSQL_PW_THESIS')
 
