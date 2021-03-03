@@ -43,5 +43,3 @@ dependencies:
     - selenium==3.141.0
     - soupsieve==2.1
     - urllib3==1.26.2
-prefix: /Users/martinthoma/miniconda3/envs/master_thesis
-

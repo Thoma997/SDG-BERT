@@ -158,5 +158,3 @@ if __name__ == '__main__':
     assert type(args[1]) == int or type(args[1]) == float, "Input argument has to be an integer"
     assert args[1] > 0, "Values below 0sec per request not accepted. A good value is e.g. ..."
     main(args[1])
-
-

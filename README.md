@@ -27,7 +27,7 @@ $ git --version
 Clone repository: <br>
 The following code will create a folder named "sdg-bert-project" on your desktop.
 ```shell
-$ mkdir ~/Desktop/sdg-bert-project && cd ~/Desktop/sdg-bert-project/
+$ mkdir ~/Desktop/ && cd ~/Desktop/SDG-BERT/
 $ git clone https://github.com/Thoma997/SDG-BERT.git
 ```
 
