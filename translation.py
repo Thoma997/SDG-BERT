@@ -1,46 +1,8 @@
 import time
 import sys
-import random
-from models import SQLHandler, Translator, TextHandler
-
-checkpoint = None
-
-def print_status(start_time, total_chars, request_counter):
-    end_time = time.time()
-    delta_sec = (end_time - start_time)
-    run_time_hours = round(((delta_sec / 60) / 60), 2)
-    chars_per_min = round((total_chars / (delta_sec / 60)),2)
-    requests_per_min = round((request_counter / (delta_sec / 60)),2)
-    s = ("\nAlgo ran with stats:\nTotal run time: {}hours\n"
-         "Total src_lang chars: {}\n"
-         "Total requests: {}\n"
-         "{} chars per minute\n"
-         "{} requests per minute").format(run_time_hours, total_chars, request_counter,
-                                          chars_per_min, requests_per_min)
-    print(s)
-
-def calc_idle_time(time_limit):
-    """
-    Calculates the remaining time, the algo needs to be idle.
-    Using the checkpoint time updated when function was visited last.
-
-    :param time_limit: The minimum time in seconds that neets to lay between two API calls.
-    :return remaining idle time (float):
-    """
-    global checkpoint
-    if checkpoint:
-        now = time.time()
-        delta = now - checkpoint
-        checkpoint = now
-        if delta > time_limit:
-            return 0
-        if delta <= time_limit:
-            raw_idle_time = time_limit - delta
-            adj_idle_time = raw_idle_time + random.randint(0, 10)
-            return adj_idle_time
-    else:
-        checkpoint = time.time()
-        return time_limit
+from models import SQLHandler, Translator, TextHandler, TimeWatcher
+import helpers
+import handlers
 
 def main(time_limit):
     """
@@ -58,6 +20,7 @@ def main(time_limit):
     translator = Translator()
     text_handler = TextHandler()
     data_handler = SQLHandler()
+    time_watcher = TimeWatcher(time_limit)
 
     # true unless None returned by data handler
     row_return_flag = True
@@ -74,82 +37,17 @@ def main(time_limit):
         job_counter += 1
         total_chars += len(text)
 
-        # portionize the text to translate
-        # because if text is too long, google neglects it
-        # splitting is done at [\n].
-        portions = text_handler.portionize(text)
-
-#        # LANGUAGE DETECTION
-#        # is algorithm is not sure about the language
-#        # it has to be entered manually.
-#        src_lang, is_reliable = translator.detect_lang(text)
-#        if not is_reliable:
-#            os.system('say "Not certain which language that is. Please decide."')
-#            print("Job ID: {}\n".format(job_id))
-#            print("Text:\n{}".format(text))
-#            src_lang = input("Please enter source language abbreviation after scheme in CLD3 github:")
-
-        # if the source language is english, nothing needs to be done
-        # (maybe just copying the value)
-        # else, we translate all portions, re-assemble them to a text
-        # and store this as the english translation
-        if src_lang != 'en':
-            src_portions, dst_portions = [], []
-            for portion in portions:
-                # for testing start slowly
-                idle_time = calc_idle_time(time_limit)
-                if idle_time > 0:
-                    print("Translating soo much text is exhausting... Giv me a {} sec break.. zzZZZ zzzZZZZ".format(
-                        idle_time))
-                time.sleep(idle_time)
-                request_counter += 1
-
-                try:
-                    _, src_portion, dst_portion = translator.translate(portion)
-                except Exception as e:
-                    print_status(start_time, total_chars, request_counter)
-                    raise Exception(str(e))
-
-                src_portions.append(src_portion)
-                dst_portions.append(dst_portion)
-            src_text = text_handler.assemble_portions(src_portions)
-            text_en = text_handler.assemble_portions(dst_portions)
-        else:
-            src_text = text
-            text_en = text
-
-        # this check enables us to see if the text, google translator used as a base for the translation
-        # operation comes close to the length of the text in original language of the database.
-        # this is important so see, Google neglected any text for translation or if otherwise the
-        # text changed during preparation.
-        l_orig = len(text)
-        l_trans = len(src_text)
-
-        if l_trans > l_orig * 0.95 and l_trans < l_orig * 1.05:
-            pass
-        else:
-            print(("PLEASE COPY THIS AND SEND IT TO MARTIN\n"
-                   "- - - - - - - - - - - - - - - - - - - - - - -"
-                   "TEXT ORIG AND TEXT PORTIONS INPUT INEQUALITY"))
-            print(("Warning: original length: {} and "
-                   "translation source length: {} differ by {}%").format(l_orig,
-                                                                         l_trans,
-                                                                         (abs(l_orig - l_trans) / l_orig) * 100))
-
-            print("TEXT_ORIG:\n{}".format(text))
-            print("TEXT_PORTIONS_INPUT:\n{}".format(src_text))
-            print("- - - - - - - - - - - - - - - - - - - - - - -")
-            continue
+        text_en = handlers.handle_translation(text, time_watcher, text_handler, translator)
 
         # PRINT STATUS
         # every 20 requests, print the current status
         if job_counter % 20 == 0:
-            print_status(start_time, total_chars, request_counter)
+            print(helpers.translation_status(start_time, total_chars, request_counter))
 
         try:
             data_handler.update_column(table=table, id=job_id, col="text_en", data=text_en)
         except Exception as e:
-            print_status(start_time, total_chars, request_counter)
+            print(helpers.translation_status(start_time, total_chars, request_counter))
             raise Exception(str(e))
 
 if __name__ == '__main__':

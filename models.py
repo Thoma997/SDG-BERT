@@ -4,7 +4,9 @@ import helpers
 import requests
 import cld3
 import re
-
+import os
+import time
+import random
 
 class SQLHandler(object):
     """
@@ -293,7 +295,13 @@ class Translator(object):
 
     def detect_lang(self, text):
         src_lang, _, is_reliable, _ = cld3.get_language(text)
-        return src_lang, is_reliable
+
+        if not is_reliable:
+            os.system('say "Not certain which language that is. Please decide."')
+            print("Text:\n{}".format(text))
+            src_lang = input("Please enter source language abbreviation after scheme in CLD3 github:")
+
+        return src_lang
 
 
 class TextHandler(object):
@@ -401,5 +409,24 @@ class TextHandler(object):
         return portions
 
 
+class TimeWatcher():
 
+    def __init__(self, t_min_sleep):
+        self.t_min_sleep = t_min_sleep
+        self.t_prev = 0
 
+    def sleep(self):
+        """
+        Calculates the remaining time, the algo needs to be idle.
+        Using the checkpoint time updated when function was visited last.
+
+        :param time_limit: The minimum time in seconds that neets to lay between two API calls.
+        :return remaining idle time (float):
+        """
+        # one request per 3 sconds (being gentle)
+        t_diff = time.time() - self.t_prev
+        t_sleep = (self.t_min_sleep - t_diff) + random.randint(0, 10)
+        if t_sleep > 0:
+            print("This work soo much text is exhausting... Giv me a {} sec break.. zzZZZ zzzZZZZ".format(t_sleep))
+            time.sleep(t_sleep)
+        self.t_prev = time.time()

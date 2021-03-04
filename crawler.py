@@ -3,7 +3,7 @@ import handlers
 import sys
 import models
 import helpers
-
+MIN_SLEEP_TIME = 9
 
 def main(platform, mode='all'):
 
@@ -70,16 +70,18 @@ def sanitize_listing_urls(platform):
 def exploit_listings_urls(platform):
     print('\n---\n\nStart exploitation\n\n---\n')
     # go through start urls
+    time_watcher = models.TimeWatcher(MIN_SLEEP_TIME)
+    sql_handler = models.SQLHandler()
     flag = True
 
     while flag:
         url = helpers.dequeue_url('listing_files', platform)
         if url:
-            page = helpers.make_request(url, platform)
+            page = helpers.make_request(url, platform, time_watcher)
             if not page:
                 continue
             try:
-                handlers.handle_listing(page, platform, url)
+                handlers.handle_listing(page, platform, url, sql_handler)
             except Exception as e:
                 helpers.queue_url(url, 'listing_files', platform)
                 raise Exception('Exception: {}'.format(e))

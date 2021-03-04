@@ -12,23 +12,15 @@ import random
 import extractors
 import settings
 import selenium_utils
-#from models import SQLHandler
-#sql_handler = SQLHandler()
+
 t_prev = time.time()
 SLEEP_TIME = 9
-
-def sleep():
-    # global request building and response handling
-    global t_prev
-    # one request per 3 sconds (being gentle)
-    t_diff = time.time() - t_prev
-    t_sleep = (SLEEP_TIME - t_diff) + SLEEP_TIME * random.random()
-    if t_sleep > 0:
-        time.sleep(t_sleep)
-    t_prev = time.time()
+checkpoint = None
 
 
-def make_request(url, platform):
+
+
+def make_request(url, platform, time_watcher):
 
     return_format = 'soup'
     if settings.platforms[platform]['returns_json']:
@@ -41,7 +33,7 @@ def make_request(url, platform):
     url = format_url(url, platform)
     log('Request page: {}'.format(url))
 
-    sleep()
+    time_watcher.sleep()
 
     try:
         r = requests.get(url, headers=headers)
@@ -343,5 +335,21 @@ def format_json(original):
         converted = legacy_format_json(original)
 
     return converted
+
+
+def translation_status(start_time, total_chars, request_counter):
+    end_time = time.time()
+    delta_sec = (end_time - start_time)
+    run_time_hours = round(((delta_sec / 60) / 60), 2)
+    chars_per_min = round((total_chars / (delta_sec / 60)), 2)
+    requests_per_min = round((request_counter / (delta_sec / 60)), 2)
+    s = ("\nAlgo ran with stats:\nTotal run time: {}hours\n"
+         "Total src_lang chars: {}\n"
+         "Total requests: {}\n"
+         "{} chars per minute\n"
+         "{} requests per minute").format(run_time_hours, total_chars, request_counter,
+                                          chars_per_min, requests_per_min)
+    return s
+
 
 
