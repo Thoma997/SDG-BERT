@@ -39,6 +39,9 @@ def main(time_limit):
 
         text_en = handlers.handle_translation(text, time_watcher, text_handler, translator)
 
+        if not text_en:
+            continue
+
         # PRINT STATUS
         # every 20 requests, print the current status
         if job_counter % 20 == 0:
@@ -52,7 +55,7 @@ def main(time_limit):
 
 if __name__ == '__main__':
     args = sys.argv
+    time_limit = float(args[1])
     assert len(args) > 1, "Function takes one input argument - seconds per request"
-    assert type(args[1]) == int or type(args[1]) == float, "Input argument has to be an integer"
-    assert args[1] > 0, "Values below 0sec per request not accepted. A good value is e.g. ..."
-    main(args[1])
+    assert time_limit > 0, "Values below 0sec per request not accepted. A good value is e.g. ..."
+    main(time_limit)
