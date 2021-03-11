@@ -6,6 +6,7 @@ listing_files/
 start_files/
 text_strings.txt
 test_suite.py
+test_files/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
