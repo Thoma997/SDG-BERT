@@ -7,6 +7,7 @@ start_files/
 text_strings.txt
 test_suite.py
 test_files/
+training_data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
