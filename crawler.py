@@ -22,6 +22,7 @@ def main(platform, mode='all'):
 
 
 def generate_listing_urls(platform):
+    time_watcher = models.TimeWatcher(MIN_SLEEP_TIME)
     with open(settings.files['start_files'][platform], "r") as f:
         for line in f:
             line = line.strip()
@@ -31,7 +32,7 @@ def generate_listing_urls(platform):
             host = helpers.get_url_host(line)
 
             if host in settings.platforms[platform]['allowed_hosts']:
-                helpers.queue_listings(line, platform)
+                helpers.queue_listings(line, platform, time_watcher)
 
 
 def sanitize_listing_urls(platform):

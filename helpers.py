@@ -168,13 +168,13 @@ def clean_text(text):
     return ''.join(clean)
 
 
-def queue_listings(url, platform):
+def queue_listings(url, platform, time_watcher):
 
     if 'indeed' in url:
         for company in settings.companies:
             url_expansion = '{}/jobs'.format(company)
             extended_url = url + url_expansion
-            page = make_request(extended_url, platform)
+            page = make_request(extended_url, platform, time_watcher)
 
             jobs = page.find_all(extractors.has_datatnentityid_attr)
             log('Found {} jobs.'.format(len(jobs)))
