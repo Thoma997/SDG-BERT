@@ -7,6 +7,7 @@ import re
 import os
 import time
 import random
+#COMP_NAME = 'Škoda'
 
 class SQLHandler(object):
     """

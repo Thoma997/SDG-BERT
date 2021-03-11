@@ -144,9 +144,13 @@ password = os.environ.get('MYSQL_PW_THESIS')
 
 
 # companies
-companies = ['H&M', 'Zara', 'Primark', 'Puma', 'Adidas', 'Pandora-Jewelry', 'JD-Sports-Fashion-PLC', 'Gucci', 'Louis-Vuitton', 'Bestseller',
+backlog_companies = ['H&M', 'Zara', 'Primark', 'Puma', 'Adidas', 'Pandora-Jewelry', 'JD-Sports-Fashion-PLC', 'Gucci', 'Louis-Vuitton', 'Bestseller',
              'BMW', 'Daimler-Ag', 'Volvo', 'Volkswagen', 'Porsche-Ag', 'Peugeot', 'Seat', 'Renault', 'Audi', 'Skoda',
              'Orsted', 'Enel', 'Edf', 'National-Grid', 'Engie', 'Endesa', 'E.on', 'Fortum', 'Rwe', 'Sse-PLC']
+
+companies = ['H&M', 'Zara', 'Primark', 'Puma', 'Pandora-Jewelry', 'JD-Sports-Fashion-PLC', 'Gucci', 'Louis-Vuitton', 'Bestseller',
+             'Daimler-Ag', 'Volkswagen', 'Porsche-Ag', 'Peugeot', 'Seat', 'Renault', 'Audi', 'Skoda',
+             'Orsted', 'Enel', 'Edf', 'National-Grid', 'Endesa', 'E.on', 'Fortum', 'Rwe']
 
 # file storage
 files = {'listing_files': {'indeed': current_dir + 'listing_files/indeed.txt',
