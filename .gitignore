@@ -8,6 +8,7 @@ text_strings.txt
 test_suite.py
 test_files/
 training_data/
+datasets/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
