@@ -10,6 +10,7 @@ test_files/
 training_data/
 datasets/
 plots/
+models/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
